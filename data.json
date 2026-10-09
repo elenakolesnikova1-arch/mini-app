@@ -1,0 +1,398 @@
+{
+  "app": {
+    "title": "Рассчитать доставку из Китая",
+    "subtitle": "Стоимость под ключ за 1 минуту",
+    "disclaimer": "Таможня входит в тариф карго. Ввоз «серый»: груз могут досмотреть, срок может вырасти. Значки ≈ — ориентир, уточни у логиста."
+  },
+  "rates": {
+    "date": "07.10.2026",
+    "USD": 86,
+    "USDsource": "твой курс",
+    "CNY": 12.8,
+    "CNYsource": "ЦБ РФ на 07.10.2026; курс пополнения Alipay обычно выше — впиши свой"
+  },
+  "cargo": {
+    "name": "Амур",
+    "route": "Китай → Москва (Южные ворота)",
+    "days": [
+      15,
+      25
+    ],
+    "minWeight": 5,
+    "tiers": [
+      {
+        "fromKg": 0,
+        "usdPerKg": 3.5
+      },
+      {
+        "fromKg": 50,
+        "usdPerKg": 3.4
+      }
+    ],
+    "densityThreshold": 100,
+    "usdPerM3": {
+      "soft_furniture": 300,
+      "default": 360
+    },
+    "usdPerM3DefaultApprox": true,
+    "caseFurnitureUsdPerKg": 2.2
+  },
+  "air": {
+    "enabled": false,
+    "usdPerKg": null,
+    "days": null,
+    "excludedTypes": [
+      "case_furniture",
+      "soft_furniture",
+      "jewelry_air"
+    ],
+    "excludedReason": "Мебель авиа не перевозится",
+    "noTariffReason": "Тарифа авиа нет в данных. Чтобы включить, впиши ставку в data.json"
+  },
+  "categories": [
+    {
+      "id": "clothes",
+      "name": "Одежда",
+      "type": "regular",
+      "questions": [
+        "brand"
+      ]
+    },
+    {
+      "id": "shoes",
+      "name": "Обувь",
+      "type": "regular",
+      "questions": [
+        "brand"
+      ]
+    },
+    {
+      "id": "jewelry",
+      "name": "Украшения",
+      "type": "jewelry_air",
+      "questions": [
+        "brand"
+      ]
+    },
+    {
+      "id": "cosmetics",
+      "name": "Косметика",
+      "type": "regular",
+      "questions": [
+        "liquid",
+        "brand"
+      ],
+      "warning": "Косметика требует сертификации — есть риски при продаже"
+    },
+    {
+      "id": "electronics",
+      "name": "Электроника",
+      "type": "regular",
+      "questions": [
+        "laptop",
+        "battery",
+        "fragile"
+      ],
+      "warning": "Электроприборы требуют сертификации — есть риски при продаже"
+    },
+    {
+      "id": "home",
+      "name": "Товары для дома",
+      "type": "regular",
+      "questions": [
+        "fragile",
+        "liquid"
+      ]
+    },
+    {
+      "id": "case_furniture",
+      "name": "Корпусная мебель",
+      "type": "case_furniture",
+      "questions": [
+        "fragile"
+      ]
+    },
+    {
+      "id": "soft_furniture",
+      "name": "Мягкая мебель",
+      "type": "soft_furniture",
+      "questions": []
+    },
+    {
+      "id": "other",
+      "name": "Другой товар",
+      "type": "regular",
+      "questions": [
+        "forbidden",
+        "battery",
+        "liquid",
+        "brand",
+        "fragile"
+      ]
+    }
+  ],
+  "questions": {
+    "laptop": {
+      "text": "Это ноутбук или телефон?",
+      "effect": "stop",
+      "message": "Ноутбуки и телефоны через карго не везут. Расчёт не делаем."
+    },
+    "forbidden": {
+      "text": "Алкоголь, лекарства, растения, э-сигареты или военная атрибутика?",
+      "effect": "stop",
+      "message": "Этот товар запрещён к ввозу через карго. Расчёт не делаем."
+    },
+    "battery": {
+      "text": "Есть аккумуляторы?",
+      "effect": "warn",
+      "message": "Аккумуляторы — уточни у логиста"
+    },
+    "liquid": {
+      "text": "Есть жидкости или аэрозоли?",
+      "effect": "warn",
+      "message": "Жидкости и аэрозоли — уточни у логиста"
+    },
+    "brand": {
+      "text": "Брендовый товар?",
+      "effect": "warn",
+      "message": "Реплики брендов могут изъять"
+    },
+    "fragile": {
+      "text": "Хрупкий груз?",
+      "effect": "warn",
+      "message": "Страховка не покрывает бой — защищай обрешёткой",
+      "recommend": "crate"
+    }
+  },
+  "packaging": [
+    {
+      "id": "standard",
+      "name": "Стандартная",
+      "desc": "Коробка + мешок + скотч",
+      "usd": 5,
+      "per": "place"
+    },
+    {
+      "id": "corners",
+      "name": "С уголками",
+      "desc": "Стандартная + картонные уголки",
+      "usd": 8,
+      "per": "place"
+    },
+    {
+      "id": "crate",
+      "name": "Обрешётка",
+      "desc": "Деревянная обрешётка",
+      "usd": 40,
+      "per": "m3",
+      "warning": "Обрешётка добавляет вес и объём, итог может вырасти"
+    },
+    {
+      "id": "box",
+      "name": "Деревянный ящик",
+      "desc": "Поддон, жёсткая защита со всех сторон: для особо ценного и нестандартного",
+      "usd": 70,
+      "per": "m3",
+      "warning": "Ящик добавляет вес и объём, итог может вырасти"
+    }
+  ],
+  "unloading": {
+    "place": "Южные ворота, Москва",
+    "brackets": [
+      {
+        "minKg": 10,
+        "maxKg": 40,
+        "rub": 200
+      },
+      {
+        "minKg": 40,
+        "maxKg": 80,
+        "rub": 400
+      }
+    ],
+    "palletRub": 1000
+  },
+  "services": {
+    "photo": {
+      "name": "Фотоотчёт",
+      "usdPerKg": 0.2,
+      "note": "2–3 позиции проверяют бесплатно"
+    },
+    "insurance": {
+      "name": "Страховка",
+      "percent": 2,
+      "note": "Утеря и конфискация. Бой не покрывает"
+    }
+  },
+  "destinations": [
+    {
+      "id": "msk",
+      "name": "Москва",
+      "cdek": false
+    },
+    {
+      "id": "ptg",
+      "name": "Пятигорск",
+      "cdek": true
+    },
+    {
+      "id": "krd",
+      "name": "Краснодар",
+      "cdek": true
+    },
+    {
+      "id": "spb",
+      "name": "Санкт-Петербург",
+      "cdek": true
+    },
+    {
+      "id": "ekb",
+      "name": "Екатеринбург",
+      "cdek": true
+    },
+    {
+      "id": "nsk",
+      "name": "Новосибирск",
+      "cdek": true
+    }
+  ],
+  "defaults": {
+    "destination": "msk",
+    "box": {
+      "weight": 23.5,
+      "length": 80,
+      "width": 60,
+      "height": 40,
+      "qty": 2
+    },
+    "goods": {
+      "priceCny": 1800,
+      "qty": 1
+    },
+    "chinaDeliveryCny": 60,
+    "services": [
+      "insurance"
+    ]
+  },
+  "recent": [
+    {
+      "id": "r1",
+      "date": "05.10.2026",
+      "inputs": {
+        "category": "case_furniture",
+        "flags": {
+          "fragile": true
+        },
+        "destination": "ptg",
+        "onlyWeight": false,
+        "boxes": [
+          {
+            "weight": 23.5,
+            "length": 80,
+            "width": 60,
+            "height": 40,
+            "qty": 2
+          }
+        ],
+        "goods": {
+          "priceCny": 1800,
+          "qty": 1
+        },
+        "chinaDeliveryCny": 60,
+        "services": [
+          "insurance"
+        ],
+        "cdekRub": null
+      }
+    },
+    {
+      "id": "r2",
+      "date": "02.10.2026",
+      "inputs": {
+        "category": "clothes",
+        "flags": {},
+        "destination": "msk",
+        "onlyWeight": false,
+        "boxes": [
+          {
+            "weight": 12,
+            "length": 60,
+            "width": 40,
+            "height": 40,
+            "qty": 3
+          }
+        ],
+        "goods": {
+          "priceCny": 95,
+          "qty": 40
+        },
+        "chinaDeliveryCny": 30,
+        "services": [
+          "photo"
+        ],
+        "cdekRub": null
+      }
+    },
+    {
+      "id": "r3",
+      "date": "28.09.2026",
+      "inputs": {
+        "category": "soft_furniture",
+        "flags": {},
+        "destination": "msk",
+        "onlyWeight": false,
+        "boxes": [
+          {
+            "weight": 18,
+            "length": 70,
+            "width": 70,
+            "height": 90,
+            "qty": 1
+          }
+        ],
+        "goods": {
+          "priceCny": 450,
+          "qty": 1
+        },
+        "chinaDeliveryCny": 20,
+        "services": [],
+        "cdekRub": null
+      }
+    },
+    {
+      "id": "r4",
+      "date": "21.09.2026",
+      "inputs": {
+        "category": "jewelry",
+        "flags": {},
+        "destination": "msk",
+        "onlyWeight": true,
+        "boxes": [
+          {
+            "weight": 0.8,
+            "length": 0,
+            "width": 0,
+            "height": 0,
+            "qty": 1
+          }
+        ],
+        "goods": {
+          "priceCny": 35,
+          "qty": 60
+        },
+        "chinaDeliveryCny": 15,
+        "services": [],
+        "cdekRub": null
+      }
+    }
+  ],
+  "jewelryAir": {
+    "name": "Авиа через байера",
+    "desc": "Украшения везём только авиа",
+    "buyerServiceRub": 5000,
+    "buyerServicePer": "order",
+    "rubPerKg": 5000,
+    "weightNote": "вес в упаковке",
+    "days": null
+  }
+}
