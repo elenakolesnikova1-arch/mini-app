@@ -336,6 +336,55 @@ html[data-theme="dark"] .cube.a::after{color:#BFD4FF}
 .hero.photo h1{color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.45)}
 .hero.photo .eyebrow{color:rgba(255,255,255,.82)}
 .hero.photo p.muted{color:rgba(232,238,252,.85)}
+
+/* Liquid Glass — глянцевые элементы главного экрана */
+.pd-glossy,
+html[data-theme="dark"] .pd-glossy{
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  border: 1.5px solid rgba(140,170,240,.75);
+  background: linear-gradient(180deg, #24418f 0%, #172f75 40%, #0e1f52 80%, #1a3480 100%);
+  box-shadow: 0 10px 24px rgba(20,42,99,.45),
+              0 2px 4px rgba(20,42,99,.25),
+              inset 0 1px 1px rgba(255,255,255,.6),
+              inset 0 -8px 14px rgba(70,120,230,.35),
+              inset 0 0 0 1px rgba(10,25,70,.55);
+}
+.pd-glossy::before{            /* глянцевая «линза» сверху */
+  content: "";
+  position: absolute;
+  top: 5px; left: 7%; right: 7%;
+  height: 42%;
+  border-radius: 999px;
+  background: linear-gradient(to bottom, rgba(255,255,255,.42), rgba(255,255,255,.1) 70%, rgba(255,255,255,.03));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.55);
+  pointer-events: none;
+}
+.pd-glossy > *{position:relative;z-index:1}
+
+/* кнопка «Рассчитать доставку» */
+.btn.pd-glossy{border-radius:32px}
+.btn.pd-glossy::before{top:6px;left:24px;right:24px;height:40%}
+.btn.pd-glossy:not([disabled]):hover,
+html[data-theme="dark"] .btn.pd-glossy:not([disabled]):hover{box-shadow:0 12px 28px rgba(20,42,99,.55),0 2px 4px rgba(20,42,99,.25),inset 0 1px 1px rgba(255,255,255,.6),inset 0 -8px 14px rgba(70,120,230,.45),inset 0 0 0 1px rgba(10,25,70,.55)}
+
+/* иконка ¥ */
+.rate .sym.pd-glossy{border-radius:16px;font-size:20px;
+  box-shadow:0 8px 16px rgba(20,42,99,.45),inset 0 1px 1px rgba(255,255,255,.6),inset 0 -5px 9px rgba(70,120,230,.4),inset 0 0 0 1px rgba(10,25,70,.55)}
+.rate .sym.pd-glossy::before{top:3px;left:4px;right:4px;height:45%;border-radius:12px 12px 10px 10px}
+
+/* круглая кнопка «+» — стеклянная сфера с прозрачным кольцом */
+.fab.pd-glossy,
+html[data-theme="dark"] .fab.pd-glossy{border-radius:50%;overflow:visible;
+  background: radial-gradient(circle at 50% 30%, #3558b8 0%, #172f75 50%, #0d1d4d 85%, #24439a 100%);
+  box-shadow: 0 0 0 6px rgba(255,255,255,.55),
+              0 0 0 7px rgba(140,165,225,.55),
+              0 0 22px 6px rgba(61,123,255,.35),
+              0 10px 22px rgba(20,42,99,.5),
+              inset 0 1px 1px rgba(255,255,255,.6),
+              inset 0 -8px 14px rgba(70,120,230,.45)}
+.fab.pd-glossy::before{top:4px;left:14%;right:14%;height:44%;border-radius:50% 50% 45% 45%/60% 60% 40% 40%}
 </style>
 </head>
 <body>
@@ -367,13 +416,13 @@ html[data-theme="dark"] .cube.a::after{color:#BFD4FF}
       </div>
     </div>
 
-    <button class="btn btn-primary btn-big btn-block" id="go-calc">
+    <button class="btn btn-primary btn-big btn-block pd-glossy" id="go-calc">
       Рассчитать доставку
       <span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </button>
 
     <div class="glass rate">
-      <div class="sym" aria-hidden="true">¥</div>
+      <div class="sym pd-glossy" aria-hidden="true">¥</div>
       <div class="grow">
         <div class="eyebrow">Курсы для расчёта</div>
         <div class="v num" id="rate-v">—</div>
@@ -546,12 +595,36 @@ html[data-theme="dark"] .cube.a::after{color:#BFD4FF}
         D = json;
         try { var saved = JSON.parse(localStorage.getItem("amur-calc-recent") || "null"); if (Array.isArray(saved)) D.recent = saved.concat(D.recent).slice(0,6); } catch(e){}
         renderHome(); show("s-home");
+        liveRates();
       })
       .catch(function(){
         if (location.protocol === "file:") $("err-text").textContent = "Файл открыт с компьютера двойным кликом, а так браузер не даёт прочитать data.json. Загрузи оба файла на сервер или открой через ссылку Mini App в Telegram.";
         show("s-error");
       });
   }
+  /* курсы ЦБ РФ в реальном времени; при ошибке остаются запасные из data.json */
+  function liveRates(){
+    var R = D.rates; if (!R || R.live === false) return;
+    var ctrl = window.AbortController ? new AbortController() : null;
+    if (ctrl) setTimeout(function(){ ctrl.abort(); }, 6000);
+    fetch(R.liveUrl || "https://www.cbr-xml-daily.ru/daily_json.js", { cache: "no-store", signal: ctrl ? ctrl.signal : undefined })
+      .then(function(r){ if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function(j){
+        var u = j.Valute.USD, c = j.Valute.CNY;
+        var usd = u.Value / (u.Nominal||1), cny = c.Value / (c.Nominal||1);
+        if (!(usd > 0 && cny > 0)) throw new Error("bad rates");
+        var dt = String(j.Date).slice(0,10).split("-").reverse().join(".");
+        R.USD = Math.round(usd * (1 + (+R.USDmarkupPct||0)/100) * 100) / 100;
+        R.CNY = Math.round(cny * (1 + (+R.CNYmarkupPct||0)/100) * 100) / 100;
+        R.date = dt;
+        R.USDsource = "ЦБ РФ на " + dt + ((+R.USDmarkupPct) ? " + " + R.USDmarkupPct + "%" : "");
+        R.CNYsource = "ЦБ РФ на " + dt + ((+R.CNYmarkupPct) ? " + " + R.CNYmarkupPct + "%" : "");
+        $("rate-v").textContent = rateLine(); $("rate-src").textContent = rateSrc(); $("rate-tag").textContent = R.date;
+      })
+      .catch(function(){});
+  }
+  function rateLine(){ return "¥1 = " + dec(D.rates.CNY,2) + " ₽ · $1 = " + dec(D.rates.USD,2) + " ₽"; }
+  function rateSrc(){ return "¥ — " + D.rates.CNYsource.split(";")[0] + " · $ — " + D.rates.USDsource; }
   $("retry").addEventListener("click", load);
 
   function freshState(){
@@ -694,8 +767,8 @@ html[data-theme="dark"] .cube.a::after{color:#BFD4FF}
   function renderHome(){
     $("h-eyebrow").textContent = "Китай → Россия";
     $("h-title").textContent = D.app.title; $("h-sub").textContent = D.app.subtitle;
-    $("rate-v").textContent = "¥1 = " + dec(D.rates.CNY,2) + " ₽ · $1 = " + num(D.rates.USD) + " ₽";
-    $("rate-src").textContent = "¥ — " + D.rates.CNYsource.split(";")[0] + " · $ — " + D.rates.USDsource;
+    $("rate-v").textContent = rateLine();
+    $("rate-src").textContent = rateSrc();
     $("rate-tag").textContent = D.rates.date;
     $("disc-1").textContent = D.app.disclaimer; $("disc-2").textContent = D.app.disclaimer;
     var list = $("recent-list"); list.innerHTML = "";
@@ -942,7 +1015,7 @@ html[data-theme="dark"] .cube.a::after{color:#BFD4FF}
     } else if (current === "s-home") {
       html = '<div class="tabbar">' +
         '<button class="tab on" id="tb-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9H4z"/></svg>Главная</button>' +
-        '<button class="fab" id="tb-new" aria-label="Новый расчёт"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>' +
+        '<button class="fab pd-glossy" id="tb-new" aria-label="Новый расчёт"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>' +
         '<button class="tab" id="tb-recent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Расчёты</button>' +
         '</div>';
     }
